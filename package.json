@@ -10,8 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@emotion/react": "^11.11.1",
     "@tanstack/react-query": "^5.13.4",
     "axios": "^1.6.2",
+    "date-fns": "^2.30.0",
     "localforage": "^1.10.0",
     "lodash": "^4.17.21",
     "match-sorter": "^6.3.1",
@@ -19,9 +21,11 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.20.1",
     "recoil": "^0.7.7",
-    "sort-by": "^1.2.0"
+    "sort-by": "^1.2.0",
+    "vite-plugin-svgr": "^4.2.0"
   },
   "devDependencies": {
+    "@emotion/babel-plugin": "^11.11.0",
     "@tanstack/eslint-plugin-query": "^5.12.1",
     "@types/lodash": "^4.14.202",
     "@types/react": "^18.2.37",
@@ -38,7 +42,6 @@
     "eslint-plugin-react-refresh": "^0.4.4",
     "prettier": "^3.1.1",
     "typescript": "^5.2.2",
-    "vite": "^5.0.0",
-    "vite-plugin-svgr": "^4.2.0"
+    "vite": "^5.0.0"
   }
 }
