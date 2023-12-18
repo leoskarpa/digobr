@@ -1,7 +1,8 @@
-import { QueryClient } from '@tanstack/react-query'
+import { QueryClient, useMutation } from '@tanstack/react-query'
+import { login } from './http'
 
 export const queryClient = new QueryClient()
 
 export const useLogin = () => {
-  return true
+  return useMutation({ mutationFn: login }, queryClient)
 }
