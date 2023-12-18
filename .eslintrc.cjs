@@ -45,11 +45,11 @@ module.exports = {
     ],
     'react/react-in-jsx-scope': 'off',
     'react/no-unknown-property': ['error', { ignore: ['css'] }],
-    // 'import/no-unresolved': [
-    //   'error',
-    //   {
-    //     ignore: ['.svg'],
-    //   },
-    // ],
+    'import/no-unresolved': [
+      'error',
+      {
+        ignore: ['.svg'],
+      },
+    ],
   },
 }

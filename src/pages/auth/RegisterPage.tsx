@@ -1,15 +1,13 @@
 import { css } from '@emotion/react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AxiosError } from 'axios'
-import { omit } from 'lodash'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { z } from 'zod'
-import { LoginVariables } from '../../api/http'
-import { useLogin } from '../../api/queries'
-import { useAccessToken, useUser } from '../../atoms'
+import { RegisterVariables } from '../../api/http'
+import { useRegister } from '../../api/queries'
 import { Button } from '../../components/inputs/Button'
 import { TextField } from '../../components/inputs/TextField'
 
@@ -61,40 +59,53 @@ const extraInfoActionTextStyle = css`
   }
 `
 
-const loginSchema = z.object({
-  usernameOrEmail: z.string().min(1, 'Username or email is required'),
+const registerSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  username: z.string().min(1, 'Username is required'),
+  email: z.string().min(1, 'Email is required').email(),
   password: z.string().min(1, 'Password is required').min(5, 'Password must be 5 or more characters'),
 })
 
-export const LoginPage = () => {
+export const RegisterPage = () => {
   const [loading, setLoading] = useState(false)
-  const { setUser } = useUser()
-  const { setAccessToken } = useAccessToken()
+  const navigate = useNavigate()
 
-  const { mutate: login } = useLogin()
-  const { control, handleSubmit, setError } = useForm<LoginVariables>({
+  const { mutate: register } = useRegister()
+  const { control, handleSubmit, setError } = useForm<RegisterVariables>({
     mode: 'all',
     defaultValues: {
-      usernameOrEmail: '',
+      name: '',
+      username: '',
+      email: '',
       password: '',
     },
-    resolver: zodResolver(loginSchema),
+    resolver: zodResolver(registerSchema),
   })
 
-  const handleLoginSubmit = (variables: LoginVariables) => {
+  const handleRegisterSubmit = (variables: RegisterVariables) => {
     setLoading(true)
 
-    login(variables, {
+    register(variables, {
       onSuccess(data) {
-        setUser(omit(data.data, 'accessToken'))
-        setAccessToken(data.data.accessToken)
+        toast.success(data.data.message)
+        navigate('/login')
       },
       onError(error) {
         if (error instanceof AxiosError) {
-          if (error.response?.status === 401) {
-            toast.error('Wrong username or password')
-            setError('usernameOrEmail', { message: 'Wrong username or password' }, { shouldFocus: true })
-            setError('password', { message: 'Wrong username or password' })
+          if (error.response && error.response?.status === 400) {
+            toast.error(error.response.data.message)
+
+            switch (error.response.data.message.split(' ', 1)[0]) {
+              case 'Email':
+                setError('email', { message: error.response.data.message }, { shouldFocus: true })
+                break
+              case 'Username':
+                setError('username', { message: error.response.data.message }, { shouldFocus: true })
+                break
+
+              default:
+                break
+            }
           } else {
             toast.error('An unexpected error occured. Please try again later.')
           }
@@ -110,29 +121,50 @@ export const LoginPage = () => {
     <div css={screenStyle}>
       <div css={containerStyle}>
         <div css={titleStyle}>Welcome to CrossMe!</div>
-        <div css={descStyle}>Please login to continue to the app:</div>
+        <div css={descStyle}>Please complete the form to create your new account:</div>
         <TextField
           control={control}
-          name="usernameOrEmail"
-          label="Username or email"
+          name="name"
+          label="Name"
           type="text"
+          autocomplete="name"
           style={css`
             margin-bottom: 0.1rem;
           `}
         />
-        <TextField control={control} name="password" label="Password" type="password" autocomplete="current-password" />
+        <TextField
+          control={control}
+          name="username"
+          label="Username"
+          type="text"
+          autocomplete="username"
+          style={css`
+            margin-bottom: 0.1rem;
+          `}
+        />
+        <TextField
+          control={control}
+          name="email"
+          label="Email"
+          type="text"
+          autocomplete="email"
+          style={css`
+            margin-bottom: 0.1rem;
+          `}
+        />
+        <TextField control={control} name="password" label="Password" type="password" autocomplete="new-password" />
         <Button
-          label="Login"
+          label="Sign up"
           type="filled"
           loading={loading}
           style={buttonStyle}
-          onClick={handleSubmit(handleLoginSubmit)}
+          onClick={handleSubmit(handleRegisterSubmit)}
         />
         <div css={extraInfoStyle}>
-          Don&apos;t have an account?
+          Already have an account?
           <br />
-          <Link to={'/register'} css={extraInfoActionTextStyle}>
-            Create one now!
+          <Link to={'/login'} css={extraInfoActionTextStyle}>
+            Log in now!
           </Link>
         </div>
       </div>
