@@ -1,5 +1,6 @@
 import type { AxiosResponse } from 'axios'
 import { client } from './client'
+import { Word } from './models/Word'
 
 export type LoginVariables = {
   usernameOrEmail: string
@@ -27,4 +28,18 @@ export type RegisterResponse = {
 }
 export const register = (variables: RegisterVariables) => {
   return client.post<RegisterResponse, AxiosResponse<RegisterResponse>, RegisterVariables>('/auth/signup', variables)
+}
+
+export type GetCrosswordVariables = {
+  difficulty: number
+  topic: number
+}
+export type GetCrosswordResponse = {
+  puzzle: Word[]
+}
+export const getCrossword = (variables: GetCrosswordVariables) => {
+  return client.post<GetCrosswordResponse, AxiosResponse<GetCrosswordResponse>, GetCrosswordVariables>(
+    '/test/generatePuzzle',
+    variables,
+  )
 }
