@@ -2,9 +2,9 @@ import { css } from '@emotion/react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AxiosError } from 'axios'
 import { omit } from 'lodash'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { z } from 'zod'
 import { LoginVariables } from '../../api/http'
@@ -12,6 +12,7 @@ import { useLogin } from '../../api/queries'
 import { useAccessToken, useUser } from '../../atoms'
 import { Button } from '../../components/inputs/Button'
 import { TextField } from '../../components/inputs/TextField'
+import { theme } from '../../utils/theme'
 
 const screenStyle = css`
   flex: 1;
@@ -53,7 +54,7 @@ const extraInfoStyle = css`
 `
 const extraInfoActionTextStyle = css`
   font-weight: 600;
-  color: #9c62d3;
+  color: ${theme.primary[500]};
   text-decoration-line: none;
 
   :hover {
@@ -68,8 +69,9 @@ const loginSchema = z.object({
 
 export const LoginPage = () => {
   const [loading, setLoading] = useState(false)
-  const { setUser } = useUser()
-  const { setAccessToken } = useAccessToken()
+  const { user, setUser } = useUser()
+  const { accessToken, setAccessToken } = useAccessToken()
+  const navigate = useNavigate()
 
   const { mutate: login } = useLogin()
   const { control, handleSubmit, setError } = useForm<LoginVariables>({
@@ -80,6 +82,10 @@ export const LoginPage = () => {
     },
     resolver: zodResolver(loginSchema),
   })
+
+  useEffect(() => {
+    if (user && accessToken) navigate('/')
+  }, [user, accessToken, navigate])
 
   const handleLoginSubmit = (variables: LoginVariables) => {
     setLoading(true)

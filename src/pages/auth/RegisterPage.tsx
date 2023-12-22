@@ -1,15 +1,17 @@
 import { css } from '@emotion/react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AxiosError } from 'axios'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { z } from 'zod'
 import { RegisterVariables } from '../../api/http'
 import { useRegister } from '../../api/queries'
+import { useAccessToken, useUser } from '../../atoms'
 import { Button } from '../../components/inputs/Button'
 import { TextField } from '../../components/inputs/TextField'
+import { theme } from '../../utils/theme'
 
 const screenStyle = css`
   flex: 1;
@@ -51,7 +53,7 @@ const extraInfoStyle = css`
 `
 const extraInfoActionTextStyle = css`
   font-weight: 600;
-  color: #9c62d3;
+  color: ${theme.primary[500]};
   text-decoration-line: none;
 
   :hover {
@@ -69,6 +71,8 @@ const registerSchema = z.object({
 export const RegisterPage = () => {
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
+  const { user } = useUser()
+  const { accessToken } = useAccessToken()
 
   const { mutate: register } = useRegister()
   const { control, handleSubmit, setError } = useForm<RegisterVariables>({
@@ -81,6 +85,10 @@ export const RegisterPage = () => {
     },
     resolver: zodResolver(registerSchema),
   })
+
+  useEffect(() => {
+    if (user && accessToken) navigate('/')
+  }, [user, accessToken, navigate])
 
   const handleRegisterSubmit = (variables: RegisterVariables) => {
     setLoading(true)

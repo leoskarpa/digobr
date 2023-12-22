@@ -4,6 +4,7 @@ import { HTMLInputTypeAttribute, useState } from 'react'
 import { Control, Controller, FieldValues, Path } from 'react-hook-form'
 import ClosedEyeIcon from '../../assets/icons/eye-closed.svg?react'
 import EyeIcon from '../../assets/icons/eye.svg?react'
+import { theme } from '../../utils/theme'
 
 const containerStyle = css`
   display: flex;
@@ -26,7 +27,7 @@ const inputContainerStyle = css`
   padding-left: 0.75rem;
   padding-right: 0.75rem;
   background-color: white;
-  border-color: #9c62d3;
+  border-color: ${theme.primary[500]};
   border-width: 1.5px;
   border-style: solid;
   border-radius: 6px;
@@ -55,7 +56,7 @@ const errorStyle = css`
   color: crimson;
 `
 const eyeIconStyle = css`
-  color: #9c62d3;
+  color: ${theme.primary[500]};
 
   :hover {
     cursor: pointer;

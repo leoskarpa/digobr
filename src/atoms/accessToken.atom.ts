@@ -1,8 +1,10 @@
 import { atom, useRecoilState, useResetRecoilState } from 'recoil'
+import { localStorageEffect } from './effects'
 
 export const accessTokenAtom = atom<string>({
   key: 'accessToken',
   default: undefined,
+  effects: [localStorageEffect('accessToken')],
 })
 
 export const useAccessToken = () => {

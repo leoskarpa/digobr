@@ -2,6 +2,7 @@ import type { SerializedStyles } from '@emotion/react'
 import { css } from '@emotion/react'
 import { Player } from '@lottiefiles/react-lottie-player'
 import LoadingAnimation from '../../assets/animations/loading.json'
+import { theme } from '../../utils/theme'
 
 type ButtonType = 'filled' | 'outlined' | 'ghost'
 
@@ -25,19 +26,19 @@ const buttonStyle = css`
   }
 `
 const filledStyle = css`
-  background-color: #9c62d3;
-  border-color: #9c62d3;
+  background-color: ${theme.primary[500]};
+  border-color: ${theme.primary[500]};
   color: white;
 `
 const outlinedStyle = css`
   background-color: transparent;
-  border-color: #9c62d3;
-  color: #9c62d3;
+  border-color: ${theme.primary[500]};
+  color: ${theme.primary[500]};
 `
 const ghostStyle = css`
   background-color: transparent;
   border-color: transparent;
-  color: #9c62d3;
+  color: ${theme.primary[500]};
 `
 const loadingStyle = css`
   background-color: transparent;

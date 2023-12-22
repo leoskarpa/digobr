@@ -1,11 +1,12 @@
 import { css } from '@emotion/react'
+import { theme } from '../../utils/theme'
 
 const containerStyle = css`
   display: flex;
   padding: 1rem;
   align-items: center;
   justify-content: center;
-  background-color: #9c62d3;
+  background-color: ${theme.primary[500]};
 `
 const headerTitleStyle = css`
   font-family: Ubuntu;
