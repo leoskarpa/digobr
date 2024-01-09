@@ -14,17 +14,30 @@ const crosswordContainerStyle = css`
   margin-bottom: 1rem;
   display: flex;
   flex-direction: column;
+
   > * :focus {
     outline: none;
   }
 `
 const gridStyle = css`
   align-self: center;
+  display: flex;
   width: 100%;
-  max-width: 48rem;
+  height: 100%;
+  max-width: 80rem;
+  max-height: 64rem;
   background-color: ${theme.primary[200]};
   padding: 2rem;
   border-radius: 0.5rem;
+  justify-content: center;
+
+  > .crossword.grid {
+    > div {
+      display: flex;
+      justify-content: center;
+      max-height: 100%;
+    }
+  }
 `
 const cluesContainerStyle = css`
   margin-top: 2rem;
@@ -38,6 +51,7 @@ export const HomePage = () => {
   const { mutate: getCrossword, isPending } = useGetCrossword()
 
   const generateCrossword = () => {
+    setCrossword(undefined)
     getCrossword(
       { difficulty: 1, topic: 1 },
       {
@@ -86,7 +100,17 @@ export const HomePage = () => {
             }}
           >
             <div css={gridStyle}>
+              {/* <div
+                css={css`
+                  flex: 1;
+                  min-width: 0;
+                  max-height: 100%;
+                  height: 100%;
+                  min-height: 100%;
+                `}
+              > */}
               <CrosswordGrid />
+              {/* </div> */}
             </div>
             <div css={cluesContainerStyle}>
               <DirectionClues direction="across" />
