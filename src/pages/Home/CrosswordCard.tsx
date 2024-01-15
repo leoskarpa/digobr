@@ -50,6 +50,7 @@ const likesContainerStyle = css`
   align-items: center;
   gap: 0.25rem;
   align-self: flex-start;
+  color: ${theme.primary[900]};
 `
 const heartStyle = css`
   color: ${theme.primary[500]};

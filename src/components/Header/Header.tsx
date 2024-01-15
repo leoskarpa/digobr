@@ -53,7 +53,7 @@ export const Header = () => {
       </Link>
       {user && (
         <button css={logoutTextStyle} onClick={onLogout}>
-          Logout
+          {user.name}
         </button>
       )}
     </div>

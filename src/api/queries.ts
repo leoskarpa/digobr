@@ -43,7 +43,7 @@ export const useGenerateCrossword = () => {
 
 export const useGetCrossword = (params: GetCrosswordParams) => {
   return useQuery<AxiosResponse<GetCrosswordResponse>, AxiosError<GetCrosswordResponse>>(
-    { queryKey: ['query', params], queryFn: () => getCrossword(params) },
+    { queryKey: ['query', params], queryFn: () => getCrossword(params), refetchOnWindowFocus: false },
     queryClient,
   )
 }
