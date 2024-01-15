@@ -2,7 +2,7 @@ import { css } from '@emotion/react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AxiosError } from 'axios'
 import { omit } from 'lodash'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
@@ -68,12 +68,11 @@ const loginSchema = z.object({
 })
 
 export const LoginPage = () => {
-  const [loading, setLoading] = useState(false)
   const { user, setUser } = useUser()
   const { accessToken, setAccessToken } = useAccessToken()
   const navigate = useNavigate()
 
-  const { mutate: login } = useLogin()
+  const { mutate: login, isPending: loading } = useLogin()
   const { control, handleSubmit, setError } = useForm<LoginVariables>({
     mode: 'all',
     defaultValues: {
@@ -88,8 +87,6 @@ export const LoginPage = () => {
   }, [user, accessToken, navigate])
 
   const handleLoginSubmit = (variables: LoginVariables) => {
-    setLoading(true)
-
     login(variables, {
       onSuccess(data) {
         setUser(omit(data.data, 'accessToken'))
@@ -106,9 +103,6 @@ export const LoginPage = () => {
           }
         }
       },
-      onSettled() {
-        setLoading(false)
-      },
     })
   }
 
@@ -122,11 +116,19 @@ export const LoginPage = () => {
           name="usernameOrEmail"
           label="Username or email"
           type="text"
+          disabled={loading}
           style={css`
             margin-bottom: 0.1rem;
           `}
         />
-        <TextField control={control} name="password" label="Password" type="password" autocomplete="current-password" />
+        <TextField
+          control={control}
+          name="password"
+          label="Password"
+          type="password"
+          disabled={loading}
+          autocomplete="current-password"
+        />
         <Button
           label="Login"
           type="filled"

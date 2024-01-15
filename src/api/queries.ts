@@ -1,12 +1,17 @@
-import { QueryClient, useMutation } from '@tanstack/react-query'
+import { QueryClient, useMutation, useQuery } from '@tanstack/react-query'
 import type { AxiosError, AxiosResponse } from 'axios'
 import {
+  GenerateCrosswordResponse,
+  GenerateCrosswordVariables,
+  GetAllPreloadedPuzzlesResponse,
+  GetCrosswordParams,
   GetCrosswordResponse,
-  GetCrosswordVariables,
   LoginResponse,
   LoginVariables,
   RegisterResponse,
   RegisterVariables,
+  generateCrossword,
+  getAllPreloadedPuzzles,
   getCrossword,
   login,
   register,
@@ -28,9 +33,27 @@ export const useRegister = () => {
   )
 }
 
-export const useGetCrossword = () => {
-  return useMutation<AxiosResponse<GetCrosswordResponse>, AxiosError<GetCrosswordResponse>, GetCrosswordVariables>(
-    { mutationFn: getCrossword },
+export const useGenerateCrossword = () => {
+  return useMutation<
+    AxiosResponse<GenerateCrosswordResponse>,
+    AxiosError<GenerateCrosswordResponse>,
+    GenerateCrosswordVariables
+  >({ mutationFn: generateCrossword }, queryClient)
+}
+
+export const useGetCrossword = (params: GetCrosswordParams) => {
+  return useQuery<AxiosResponse<GetCrosswordResponse>, AxiosError<GetCrosswordResponse>>(
+    { queryKey: ['query', params], queryFn: () => getCrossword(params) },
+    queryClient,
+  )
+}
+
+export const useGetAllPreloadedPuzzles = () => {
+  return useQuery<AxiosResponse<GetAllPreloadedPuzzlesResponse>, AxiosError<GetAllPreloadedPuzzlesResponse>>(
+    {
+      queryKey: ['preloaded'],
+      queryFn: getAllPreloadedPuzzles,
+    },
     queryClient,
   )
 }

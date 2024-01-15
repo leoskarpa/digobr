@@ -1,122 +1,57 @@
 import { css } from '@emotion/react'
-import { CrosswordGrid, CrosswordProvider, DirectionClues } from '@jaredreisinger/react-crossword'
-import { ClueTypeOriginal, CluesInputOriginal } from '@jaredreisinger/react-crossword/dist/types'
-import { useState } from 'react'
-import { useGetCrossword } from '../../api/queries'
-import { Button } from '../../components/inputs/Button'
+import { Player } from '@lottiefiles/react-lottie-player'
+import { orderBy } from 'lodash'
+import { useMemo } from 'react'
+
+import { Crossword } from '../../api/models/Crossword'
+import { useGetAllPreloadedPuzzles } from '../../api/queries'
+import GeneratingAnimation from '../../assets/animations/generating.json'
 import { theme } from '../../utils/theme'
+import { CrosswordCard } from './CrosswordCard'
 
 const screenStyle = css`
   padding: 1rem;
-`
-const crosswordContainerStyle = css`
-  margin-top: 1rem;
-  margin-bottom: 1rem;
   display: flex;
   flex-direction: column;
-
-  > * :focus {
-    outline: none;
-  }
 `
-const gridStyle = css`
-  align-self: center;
-  display: flex;
-  width: 100%;
-  height: 100%;
-  max-width: 80rem;
-  max-height: 64rem;
-  background-color: ${theme.primary[200]};
-  padding: 2rem;
-  border-radius: 0.5rem;
-  justify-content: center;
-
-  > .crossword.grid {
-    > div {
-      display: flex;
-      justify-content: center;
-      max-height: 100%;
-    }
-  }
+const titleStyle = css`
+  font-size: 2rem;
+  font-weight: bold;
+  color: ${theme.primary[800]};
+  margin-top: 1rem;
 `
-const cluesContainerStyle = css`
-  margin-top: 2rem;
+const crosswordsContainerStyle = css`
   display: flex;
   flex-direction: row;
-  justify-content: space-evenly;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 2rem;
+`
+const animationStyle = css`
+  width: 20rem;
 `
 
 export const HomePage = () => {
-  const [crossword, setCrossword] = useState<CluesInputOriginal>()
-  const { mutate: getCrossword, isPending } = useGetCrossword()
+  const { data, isFetching } = useGetAllPreloadedPuzzles()
 
-  const generateCrossword = () => {
-    setCrossword(undefined)
-    getCrossword(
-      { difficulty: 1, topic: 1 },
-      {
-        onSuccess(data) {
-          setCrossword(
-            data.data.puzzle.reduce<CluesInputOriginal>(
-              (final, curr, idx) => {
-                const newClue: ClueTypeOriginal = {
-                  clue: curr.desc,
-                  answer: curr.word,
-                  row: curr.startPosition[0],
-                  col: curr.startPosition[1],
-                }
-
-                return {
-                  ...final,
-                  [curr.vertical ? 'down' : 'across']: {
-                    ...final[curr.vertical ? 'down' : 'across'],
-                    [`${idx + 1}`]: newClue,
-                  },
-                }
-              },
-              { across: {}, down: {} },
-            ),
-          )
-        },
-      },
-    )
-  }
+  const crosswords = useMemo<Crossword[]>(() => (data ? orderBy(data?.data, 'id', 'asc') : []), [data])
 
   return (
     <div css={screenStyle}>
-      <Button label="Generate" onClick={generateCrossword} type="filled" loading={isPending} />
-
-      <div css={crosswordContainerStyle}>
-        {crossword && (
-          <CrosswordProvider
-            data={crossword}
-            theme={{
-              allowNonSquare: true,
-              gridBackground: theme.primary[200],
-              cellBorder: theme.primary[500],
-              highlightBackground: theme.primary[300],
-              focusBackground: theme.primary[400],
-              numberColor: theme.primary[200],
-            }}
-          >
-            <div css={gridStyle}>
-              {/* <div
-                css={css`
-                  flex: 1;
-                  min-width: 0;
-                  max-height: 100%;
-                  height: 100%;
-                  min-height: 100%;
-                `}
-              > */}
-              <CrosswordGrid />
-              {/* </div> */}
-            </div>
-            <div css={cluesContainerStyle}>
-              <DirectionClues direction="across" />
-              <DirectionClues direction="down" />
-            </div>
-          </CrosswordProvider>
+      <div css={titleStyle}>All crosswords</div>
+      <div
+        css={[
+          crosswordsContainerStyle,
+          isFetching &&
+            css`
+              justify-content: center;
+            `,
+        ]}
+      >
+        {isFetching ? (
+          <Player src={GeneratingAnimation} autoplay loop css={animationStyle} />
+        ) : (
+          crosswords.map(c => <CrosswordCard key={c.id} crossword={c} />)
         )}
       </div>
     </div>

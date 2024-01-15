@@ -1,4 +1,5 @@
 import { css } from '@emotion/react'
+import { Link } from 'react-router-dom'
 import { useUser } from '../../atoms'
 import { theme } from '../../utils/theme'
 
@@ -14,6 +15,7 @@ const headerTitleStyle = css`
   font-weight: bold;
   font-size: 2.5rem;
   color: white;
+  text-decoration: none;
 `
 const logoutTextStyle = css`
   font-family: Ubuntu;
@@ -46,7 +48,9 @@ export const Header = () => {
           `,
       ]}
     >
-      <div css={headerTitleStyle}>CrossMe</div>
+      <Link to={'/'} css={headerTitleStyle}>
+        CrossMe
+      </Link>
       {user && (
         <button css={logoutTextStyle} onClick={onLogout}>
           Logout

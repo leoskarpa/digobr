@@ -1,5 +1,6 @@
 import type { AxiosResponse } from 'axios'
 import { client } from './client'
+import { Crossword } from './models/Crossword'
 import { Word } from './models/Word'
 
 export type LoginVariables = {
@@ -30,16 +31,40 @@ export const register = (variables: RegisterVariables) => {
   return client.post<RegisterResponse, AxiosResponse<RegisterResponse>, RegisterVariables>('/auth/signup', variables)
 }
 
-export type GetCrosswordVariables = {
-  difficulty: number
-  topic: number
+export type GenerateCrosswordVariables = {
+  difficulty: {
+    id: number
+    description: string
+  }
+  topic: {
+    id: number
+    topicName: string
+  }
+}
+export type GenerateCrosswordResponse = {
+  puzzle: Word[]
+}
+export const generateCrossword = (variables: GenerateCrosswordVariables) => {
+  return client.post<GenerateCrosswordResponse, AxiosResponse<GenerateCrosswordResponse>, GenerateCrosswordVariables>(
+    '/generatePuzzle',
+    variables,
+  )
+}
+
+export type GetCrosswordParams = {
+  crosswordId: number
 }
 export type GetCrosswordResponse = {
   puzzle: Word[]
 }
-export const getCrossword = (variables: GetCrosswordVariables) => {
-  return client.post<GetCrosswordResponse, AxiosResponse<GetCrosswordResponse>, GetCrosswordVariables>(
-    '/test/generatePuzzle',
-    variables,
+export const getCrossword = (params: GetCrosswordParams) => {
+  return client.get<GetCrosswordResponse, AxiosResponse<GetCrosswordResponse>, GetCrosswordParams>(
+    '/generatePuzzle/by-id',
+    { params },
   )
+}
+
+export type GetAllPreloadedPuzzlesResponse = Crossword[]
+export const getAllPreloadedPuzzles = () => {
+  return client.get<GetAllPreloadedPuzzlesResponse, AxiosResponse<GetAllPreloadedPuzzlesResponse>>('/preloaded-puzzles')
 }

@@ -184,10 +184,11 @@ interface TextFieldProps<T extends FieldValues = FieldValues> {
   type: HTMLInputTypeAttribute
   hint?: string
   style?: SerializedStyles
+  disabled?: boolean
   autocomplete?: HTMLInputAutocompleteAttribute
 }
 export const TextField = <T extends FieldValues = FieldValues>(props: TextFieldProps<T>) => {
-  const { control, name, label, type, hint, style, autocomplete = 'on' } = props
+  const { control, name, label, type, hint, style, disabled = false, autocomplete = 'on' } = props
 
   const [isSecure, setIsSecure] = useState(type === 'password')
 
@@ -200,6 +201,7 @@ export const TextField = <T extends FieldValues = FieldValues>(props: TextFieldP
           <div css={[labelStyle, error && errorLabelStyle]}>{label}</div>
           <div css={[inputContainerStyle, error && errorInputContainerStyle]}>
             <input
+              disabled={disabled}
               type={type === 'password' && !isSecure ? 'text' : type}
               autoComplete={autocomplete}
               css={inputStyle}
