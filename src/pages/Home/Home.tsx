@@ -1,8 +1,8 @@
 import { css } from '@emotion/react'
 import { Player } from '@lottiefiles/react-lottie-player'
-import { Modal, Select } from 'antd'
+import { ConfigProvider, Modal, Radio, Select } from 'antd'
 import type { DefaultOptionType } from 'antd/es/select'
-import { capitalize, orderBy } from 'lodash'
+import { capitalize, orderBy, pickBy } from 'lodash'
 import { useMemo, useState } from 'react'
 import { Controller, SubmitHandler, useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
@@ -58,8 +58,10 @@ const selectContainerStyle = css`
 `
 
 export const HomePage = () => {
-  const [openModal, setOpenModal] = useState(false)
   const navigate = useNavigate()
+
+  const [openModal, setOpenModal] = useState(false)
+  const [showOnlyLiked, setShowOnlyLiked] = useState(false)
 
   // * Queries
   const { data: preloadedPuzzlesData, isLoading } = useGetAllPreloadedPuzzles()
@@ -82,8 +84,15 @@ export const HomePage = () => {
 
   // * Memoizations
   const crosswords = useMemo<GetAllPreloadedPuzzlesResponse>(
-    () => (preloadedPuzzlesData ? orderBy(preloadedPuzzlesData.data, 'id', 'asc') : []),
-    [preloadedPuzzlesData],
+    () =>
+      preloadedPuzzlesData
+        ? orderBy(
+            pickBy(preloadedPuzzlesData.data, d => (showOnlyLiked ? d.likedByUser : d)),
+            'id',
+            'asc',
+          )
+        : [],
+    [preloadedPuzzlesData, showOnlyLiked],
   )
   const difficulties = useMemo<DefaultOptionType[]>(
     () => (difficultiesData ? difficultiesData.data.map(d => ({ label: capitalize(d.description), value: d.id })) : []),
@@ -118,6 +127,23 @@ export const HomePage = () => {
         <h1 css={titleStyle}>All crosswords</h1>
         <Button label="Generate" onClick={handleOpenGenerateModal} type="filled" LeftIcon={PlusCircleIcon} />
       </div>
+      <ConfigProvider
+        theme={{ components: { Radio: { colorPrimary: theme.primary[500], colorPrimaryHover: theme.primary[700] } } }}
+      >
+        <Radio.Group
+          defaultValue="all"
+          buttonStyle="solid"
+          style={{ marginTop: '1rem' }}
+          onChange={e => setShowOnlyLiked(e.target.value === 'liked')}
+        >
+          <Radio.Button style={{ fontFamily: 'Rubik' }} value="all">
+            All
+          </Radio.Button>
+          <Radio.Button style={{ fontFamily: 'Rubik' }} value="liked">
+            Only liked
+          </Radio.Button>
+        </Radio.Group>
+      </ConfigProvider>
       <div
         css={[
           crosswordsContainerStyle,
