@@ -1,8 +1,6 @@
 import { css } from '@emotion/react'
-import type { MouseEventHandler } from 'react'
 import { Link } from 'react-router-dom'
 import { Crossword } from '../../api/models/Crossword'
-import { useLikePuzzle } from '../../api/queries'
 import HeartEmpty from '../../assets/icons/heart-empty.svg?react'
 import HeartFilled from '../../assets/icons/heart-filled.svg?react'
 import CoverPlaceholder from '../../assets/illustrations/crossword-cover.png'
@@ -64,13 +62,6 @@ interface CrosswordCardProps {
 export const CrosswordCard = (props: CrosswordCardProps) => {
   const { crossword } = props
 
-  const { mutate: likePuzzle } = useLikePuzzle()
-
-  const handleLikeCrossword: MouseEventHandler<SVGSVGElement> = e => {
-    e.preventDefault()
-    likePuzzle({ crosswordId: crossword.id })
-  }
-
   return (
     <Link to={`/quiz/${crossword.id}`} css={cardStyle}>
       <div css={imageContainerStyle}>
@@ -89,11 +80,7 @@ export const CrosswordCard = (props: CrosswordCardProps) => {
           </div>
         </div>
         <div css={likesContainerStyle}>
-          {crossword.likedByUser ? (
-            <HeartFilled css={heartStyle} onClick={handleLikeCrossword} />
-          ) : (
-            <HeartEmpty css={heartStyle} onClick={handleLikeCrossword} />
-          )}
+          {crossword.likedByUser ? <HeartFilled css={heartStyle} /> : <HeartEmpty css={heartStyle} />}
           {crossword.likes}
         </div>
       </div>
