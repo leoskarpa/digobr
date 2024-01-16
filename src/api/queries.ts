@@ -20,6 +20,7 @@ import {
   likePuzzle,
   login,
   register,
+  submitPuzzle,
 } from './http'
 
 export const queryClient = new QueryClient()
@@ -112,4 +113,8 @@ export const useLikePuzzle = () => {
     },
     queryClient,
   )
+}
+
+export const useSubmitPuzzle = () => {
+  return useMutation({ mutationFn: submitPuzzle }, queryClient)
 }

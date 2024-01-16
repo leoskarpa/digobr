@@ -79,3 +79,18 @@ export type LikePuzzleVariables = {
 export const likePuzzle = (variables: LikePuzzleVariables) => {
   return client.post('/likePuzzle/by-id', {}, { params: variables })
 }
+
+export type AnswerType = {
+  word: string
+  desc: string
+  usersAnswer: string
+}
+export type SubmitPuzzleVariables = {
+  crosswordId: number
+  correctAnswers: AnswerType[]
+  incorrectAnswers: AnswerType[]
+}
+export const submitPuzzle = (variables: SubmitPuzzleVariables) => {
+  // TODO - TS fix
+  return client.post('/submitPuzzle', variables)
+}

@@ -5,11 +5,14 @@ import {
   CrosswordProviderImperative,
   DirectionClues,
 } from '@jaredreisinger/react-crossword'
-import { ClueTypeOriginal, CluesInputOriginal, Direction } from '@jaredreisinger/react-crossword/dist/types'
+import { ClueTypeOriginal, CluesInputOriginal } from '@jaredreisinger/react-crossword/dist/types'
 import { Player } from '@lottiefiles/react-lottie-player'
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useRef } from 'react'
 
-import { useGetCrossword } from '../../api/queries'
+import { values } from 'lodash'
+import { toast } from 'react-toastify'
+import { SubmitPuzzleVariables } from '../../api/http'
+import { useGetCrossword, useSubmitPuzzle } from '../../api/queries'
 import GeneratingAnimation from '../../assets/animations/generating.json'
 import { Button } from '../../components/inputs/Button'
 import { useRequiredParams } from '../../utils/hooks'
@@ -69,27 +72,18 @@ const animationStyle = css`
   width: 20rem;
 `
 
-type AnswerType = {
-  word: string
-  desc: string
-  usersAnswer: string
-}
-type SubmitType = {
-  corsswordId: number
-  incorrectAnswers: AnswerType[]
-  correctAnswers: AnswerType[]
-}
+type LocalStorageGuesses = { date: number; guesses: { [K: string]: string } }
 
 type CrosswordPageParams = {
   id: string
 }
 export const CrosswordPage = () => {
   const { id } = useRequiredParams<CrosswordPageParams>()
-  const { data, isFetching } = useGetCrossword({ crosswordId: +id })
-  const crosswordProviderRef = useRef<CrosswordProviderImperative>(null)
 
-  const [correctAnswers, setCorrectAnswers] = useState<AnswerType>()
-  const [incorrectAnswers, setIncorrectAnswers] = useState<AnswerType>()
+  const { data, isFetching } = useGetCrossword({ crosswordId: +id })
+  const { mutate: submitPuzzle } = useSubmitPuzzle()
+
+  const crosswordProviderRef = useRef<CrosswordProviderImperative>(null)
 
   const crossword = useMemo<CluesInputOriginal | null>(
     () =>
@@ -118,33 +112,44 @@ export const CrosswordPage = () => {
   )
 
   const handleSubmitCrossword = () => {
-    const crosswordUserData = JSON.parse(localStorage.getItem('guesses'))
-    console.log(crosswordUserData)
-  }
-  const handleAnswerComplete = (direction: Direction, number: string, correct: boolean, answer: string) => {
-    console.log(direction, number, correct, answer)
-    const realClue = crossword![direction][`${+number}`]
-    console.log(realClue)
-    setTimeout(() => getUsersAnswerFromLocalStorage(direction, realClue.row, realClue.col, answer.length), 0)
-  }
-  const getUsersAnswerFromLocalStorage = (direction: Direction, row: number, col: number, answerLength: number) => {
     const crosswordUserGuessesData = localStorage.getItem('guesses')
+    if (!crosswordUserGuessesData || !crossword) return null
 
-    if (!crosswordUserGuessesData) return null
+    const crosswordUserGuesses = JSON.parse(crosswordUserGuessesData) as LocalStorageGuesses
 
-    const crosswordUserGuesses: { date: number; guesses: { [K: string]: string } } =
-      JSON.parse(crosswordUserGuessesData)
+    const submitdata: SubmitPuzzleVariables = { crosswordId: +id, correctAnswers: [], incorrectAnswers: [] }
 
-    if (direction === 'across') {
+    const questions = [
+      ...values(crossword.across).map(d => ({ ...d, vertical: false })),
+      ...values(crossword.down).map(d => ({ ...d, vertical: true })),
+    ]
+
+    questions.forEach(val => {
       let usersAnswer = ''
 
-      for (let i = 0; i < answerLength; i++) {
-        usersAnswer += crosswordUserGuesses.guesses[`${row}_${col + i}`]
-        console.log(`${row}_${col + i}`)
-        console.log(crosswordUserGuesses.guesses[`${row}_${col + i}`])
+      for (let i = 0; i < val.answer.length; i++) {
+        usersAnswer +=
+          crosswordUserGuesses.guesses[
+            `${val.vertical ? val.row + i : val.row}_${val.vertical ? val.col : val.col + i}`
+          ]
       }
-      console.log(usersAnswer)
-    }
+
+      if (usersAnswer === val.answer) {
+        submitdata.correctAnswers.push({ desc: val.clue, usersAnswer, word: val.answer })
+      } else {
+        submitdata.incorrectAnswers.push({ desc: val.clue, usersAnswer, word: val.answer })
+      }
+    })
+
+    console.log(submitdata)
+    submitPuzzle(submitdata, {
+      onSuccess() {
+        toast.success('Successfully submitted!')
+      },
+      onError() {
+        toast.error('Failed to submit')
+      },
+    })
   }
 
   return (
@@ -168,7 +173,6 @@ export const CrosswordPage = () => {
                 focusBackground: theme.primary[400],
                 numberColor: theme.primary[200],
               }}
-              onAnswerComplete={handleAnswerComplete}
               ref={crosswordProviderRef}
             >
               <div css={gridStyle}>
