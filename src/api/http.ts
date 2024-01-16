@@ -1,6 +1,8 @@
 import type { AxiosResponse } from 'axios'
 import { client } from './client'
 import { Crossword } from './models/Crossword'
+import { Difficulty } from './models/Difficulty'
+import { Topic } from './models/Topic'
 import { Word } from './models/Word'
 
 export type LoginVariables = {
@@ -32,18 +34,10 @@ export const register = (variables: RegisterVariables) => {
 }
 
 export type GenerateCrosswordVariables = {
-  difficulty: {
-    id: number
-    description: string
-  }
-  topic: {
-    id: number
-    topicName: string
-  }
+  difficultyId: number
+  topicId: number
 }
-export type GenerateCrosswordResponse = {
-  puzzle: Word[]
-}
+export type GenerateCrosswordResponse = number
 export const generateCrossword = (variables: GenerateCrosswordVariables) => {
   return client.post<GenerateCrosswordResponse, AxiosResponse<GenerateCrosswordResponse>, GenerateCrosswordVariables>(
     '/generatePuzzle',
@@ -64,7 +58,24 @@ export const getCrossword = (params: GetCrosswordParams) => {
   )
 }
 
-export type GetAllPreloadedPuzzlesResponse = Crossword[]
+export type GetAllPreloadedPuzzlesResponse = Array<Crossword & { likedByUser: boolean }>
 export const getAllPreloadedPuzzles = () => {
-  return client.get<GetAllPreloadedPuzzlesResponse, AxiosResponse<GetAllPreloadedPuzzlesResponse>>('/preloaded-puzzles')
+  return client.get<GetAllPreloadedPuzzlesResponse>('/preloaded-puzzles')
+}
+
+export type GetDifficultiesResponse = Difficulty[]
+export const getDifficulties = () => {
+  return client.get<GetDifficultiesResponse>('/difficulties')
+}
+
+export type GetTopicsResponse = Topic[]
+export const getTopics = () => {
+  return client.get<GetTopicsResponse>('/topics')
+}
+
+export type LikePuzzleVariables = {
+  crosswordId: number
+}
+export const likePuzzle = (variables: LikePuzzleVariables) => {
+  return client.post('/likePuzzle/by-id', {}, { params: variables })
 }

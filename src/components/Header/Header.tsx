@@ -1,5 +1,9 @@
 import { css } from '@emotion/react'
+import type { MenuProps } from 'antd'
+import { Dropdown } from 'antd'
 import { Link } from 'react-router-dom'
+
+import ChevronDownIcon from '../../assets/icons/chevron-down.svg?react'
 import { useUser } from '../../atoms'
 import { theme } from '../../utils/theme'
 
@@ -25,18 +29,31 @@ const logoutTextStyle = css`
   outline: none;
   border: none;
   background-color: transparent;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
 
   :hover {
     cursor: pointer;
   }
 `
+const chevronDownStyle = css`
+  width: 1rem;
+  height: 1rem;
+`
 
 export const Header = () => {
   const { user, resetUser } = useUser()
 
-  const onLogout = () => {
-    resetUser()
-  }
+  const items: MenuProps['items'] = [
+    {
+      key: 'logout',
+      onClick: () => resetUser(),
+      label: 'Logout',
+    },
+  ]
 
   return (
     <div
@@ -52,9 +69,11 @@ export const Header = () => {
         CrossMe
       </Link>
       {user && (
-        <button css={logoutTextStyle} onClick={onLogout}>
-          {user.name}
-        </button>
+        <Dropdown css={logoutTextStyle} trigger={['click']} menu={{ items }}>
+          <div>
+            {user.name} <ChevronDownIcon css={chevronDownStyle} />
+          </div>
+        </Dropdown>
       )}
     </div>
   )

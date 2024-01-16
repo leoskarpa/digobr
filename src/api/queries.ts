@@ -6,6 +6,8 @@ import {
   GetAllPreloadedPuzzlesResponse,
   GetCrosswordParams,
   GetCrosswordResponse,
+  GetDifficultiesResponse,
+  GetTopicsResponse,
   LoginResponse,
   LoginVariables,
   RegisterResponse,
@@ -13,6 +15,9 @@ import {
   generateCrossword,
   getAllPreloadedPuzzles,
   getCrossword,
+  getDifficulties,
+  getTopics,
+  likePuzzle,
   login,
   register,
 } from './http'
@@ -53,6 +58,57 @@ export const useGetAllPreloadedPuzzles = () => {
     {
       queryKey: ['preloaded'],
       queryFn: getAllPreloadedPuzzles,
+    },
+    queryClient,
+  )
+}
+
+export const useGetDifficulties = () => {
+  return useQuery<AxiosResponse<GetDifficultiesResponse>, AxiosError<GetDifficultiesResponse>>(
+    { queryKey: ['difficulties'], queryFn: getDifficulties },
+    queryClient,
+  )
+}
+
+export const useGetTopics = () => {
+  return useQuery<AxiosResponse<GetTopicsResponse>, AxiosError<GetTopicsResponse>>(
+    { queryKey: ['topics'], queryFn: getTopics },
+    queryClient,
+  )
+}
+
+export const useLikePuzzle = () => {
+  return useMutation(
+    {
+      mutationFn: likePuzzle,
+      onMutate: async variables => {
+        await queryClient.cancelQueries({ queryKey: ['preloaded'] })
+
+        const previousPreloadedPuzzles = queryClient.getQueryData<AxiosResponse<GetAllPreloadedPuzzlesResponse>>([
+          'preloaded',
+        ])
+
+        queryClient.setQueryData<AxiosResponse<GetAllPreloadedPuzzlesResponse>>(
+          ['preloaded'],
+          old =>
+            old && {
+              ...old,
+              data: old.data.map(pp =>
+                pp.id === variables.crosswordId
+                  ? { ...pp, likedByUser: !pp.likedByUser, likes: pp.likedByUser ? pp.likes - 1 : pp.likes + 1 }
+                  : pp,
+              ),
+            },
+        )
+
+        return { previousPreloadedPuzzles }
+      },
+      onError: (_, __, context) => {
+        queryClient.setQueryData(['todos'], context?.previousPreloadedPuzzles)
+      },
+      onSettled: async () => {
+        await queryClient.invalidateQueries({ queryKey: ['preloaded'] })
+      },
     },
     queryClient,
   )

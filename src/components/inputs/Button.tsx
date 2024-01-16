@@ -3,6 +3,7 @@ import { css } from '@emotion/react'
 import { Player } from '@lottiefiles/react-lottie-player'
 import LoadingAnimation from '../../assets/animations/loading.json'
 import { theme } from '../../utils/theme'
+import { SVGType } from '../../utils/types'
 
 type ButtonType = 'filled' | 'outlined' | 'ghost'
 
@@ -13,6 +14,7 @@ const buttonStyle = css`
   flex-direction: row;
   align-items: center;
   justify-content: center;
+  gap: 0.4rem;
   font-family: Rubik;
   font-size: 1.125rem;
   font-weight: 500;
@@ -52,6 +54,10 @@ const loadingAnimationStyle = css`
   width: 1.2em;
   height: 1.2em;
 `
+const iconStyle = css`
+  height: 1.125rem;
+  width: 1.125rem;
+`
 
 interface ButtonProps {
   label: string
@@ -59,9 +65,10 @@ interface ButtonProps {
   loading?: boolean
   onClick: () => unknown
   style?: SerializedStyles
+  LeftIcon?: SVGType
 }
 export const Button = (props: ButtonProps) => {
-  const { label, type = 'filled', loading = false, style, onClick } = props
+  const { label, type = 'filled', loading = false, style, onClick, LeftIcon } = props
 
   return (
     <button
@@ -73,7 +80,14 @@ export const Button = (props: ButtonProps) => {
         style,
       ]}
     >
-      {loading ? <Player src={LoadingAnimation} autoplay loop css={loadingAnimationStyle} /> : label}
+      {loading ? (
+        <Player src={LoadingAnimation} autoplay loop css={loadingAnimationStyle} />
+      ) : (
+        <>
+          {LeftIcon && <LeftIcon css={iconStyle} />}
+          {label}
+        </>
+      )}
     </button>
   )
 }
