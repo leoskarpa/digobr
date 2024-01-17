@@ -7,16 +7,20 @@ import {
 } from '@jaredreisinger/react-crossword'
 import { ClueTypeOriginal, CluesInputOriginal } from '@jaredreisinger/react-crossword/dist/types'
 import { Player } from '@lottiefiles/react-lottie-player'
-import { useMemo, useRef } from 'react'
+import { useMemo, useRef, useState } from 'react'
 
+import { Modal } from 'antd'
 import { values } from 'lodash'
 import { toast } from 'react-toastify'
 import { SubmitPuzzleVariables } from '../../api/http'
-import { useGetCrossword, useSubmitPuzzle } from '../../api/queries'
-import GeneratingAnimation from '../../assets/animations/generating.json'
+import { useGenerateCrossword, useGetCrossword, useSubmitPuzzle } from '../../api/queries'
 import { Button } from '../../components/inputs/Button'
 import { useRequiredParams } from '../../utils/hooks'
 import { theme } from '../../utils/theme'
+
+import { useNavigate } from 'react-router-dom'
+import GeneratingAnimation from '../../assets/animations/generating.json'
+import ProcessingAnimation from '../../assets/animations/processing.json'
 
 const screenStyle = css`
   padding: 1rem;
@@ -71,6 +75,16 @@ const cluesContainerStyle = css`
 const animationStyle = css`
   width: 20rem;
 `
+const analysisContainerStyle = css`
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+`
+const analysisTextStyle = css`
+  overflow-y: auto;
+  white-space: pre-wrap;
+`
 
 type LocalStorageGuesses = { date: number; guesses: { [K: string]: string } }
 
@@ -80,8 +94,12 @@ type CrosswordPageParams = {
 export const CrosswordPage = () => {
   const { id } = useRequiredParams<CrosswordPageParams>()
 
+  const [submitModalOpen, setSubmitModalOpen] = useState(false)
+  const navigate = useNavigate()
+
   const { data, isFetching } = useGetCrossword({ crosswordId: +id })
-  const { mutate: submitPuzzle } = useSubmitPuzzle()
+  const { data: submitData, isPending: isSubmitting, mutate: submitPuzzle, reset: resetSubmit } = useSubmitPuzzle()
+  const { mutate: generateCrossword, isPending: isGenerating } = useGenerateCrossword()
 
   const crosswordProviderRef = useRef<CrosswordProviderImperative>(null)
 
@@ -141,7 +159,7 @@ export const CrosswordPage = () => {
       }
     })
 
-    console.log(submitdata)
+    setSubmitModalOpen(true)
     submitPuzzle(submitdata, {
       onSuccess() {
         toast.success('Successfully submitted!')
@@ -186,6 +204,77 @@ export const CrosswordPage = () => {
           )
         )}
       </div>
+      <Modal
+        title={isSubmitting ? 'Submitting...' : 'Your analysis'}
+        open={submitModalOpen}
+        styles={{
+          content: { maxHeight: '60dvh', display: 'flex', flexDirection: 'column' },
+          body: { display: 'flex', flexDirection: 'column', minHeight: 0, flex: 1, gap: '2rem' },
+        }}
+        centered
+        confirmLoading={isSubmitting || isGenerating}
+        maskClosable={!isSubmitting && !isGenerating}
+        closable={!isSubmitting && !isGenerating}
+        {...(isSubmitting ? { footer: null } : {})}
+        okText="Regenerate new"
+        onOk={() => {
+          generateCrossword(
+            {
+              difficultyId: submitData?.data.suggestedCrossword
+                ? submitData?.data.suggestedCrossword.puzzleDifficulty
+                : 1,
+              topicId: submitData?.data.suggestedCrossword ? submitData?.data.suggestedCrossword?.puzzleTopic : 1,
+            },
+            {
+              onSuccess(data) {
+                setSubmitModalOpen(false)
+                toast.success('Successfully created a new crossword!')
+                navigate(`/quiz/${data.data}`, { replace: true })
+              },
+              onError(error) {
+                toast.error(error.message)
+              },
+            },
+          )
+        }}
+        cancelText="Close"
+        okButtonProps={{
+          style: { backgroundColor: theme.primary[500], color: 'white' },
+        }}
+        cancelButtonProps={{
+          disabled: isSubmitting || isGenerating,
+          style: { borderColor: theme.primary[500], color: theme.primary[500] },
+        }}
+        onCancel={() => {
+          resetSubmit()
+          setSubmitModalOpen(false)
+          navigate('/')
+        }}
+      >
+        <>
+          {isSubmitting ? (
+            <Player src={ProcessingAnimation} autoplay loop />
+          ) : (
+            <>
+              <div css={analysisContainerStyle}>
+                <p css={analysisTextStyle}>{submitData?.data.analysis}</p>
+              </div>
+              {submitData?.data.suggestedCrossword && (
+                <div>
+                  <h4>Suggested crossword</h4>
+                  <p>
+                    Because of your outstanding knowledge, we recommend you to try a new crossword with:
+                    <br />
+                    <b>difficulty:</b> {'easy'}
+                    <br />
+                    <b>topic:</b> {'sport'}
+                  </p>
+                </div>
+              )}
+            </>
+          )}
+        </>
+      </Modal>
     </div>
   )
 }

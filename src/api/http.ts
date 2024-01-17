@@ -90,7 +90,16 @@ export type SubmitPuzzleVariables = {
   correctAnswers: AnswerType[]
   incorrectAnswers: AnswerType[]
 }
+export type SubmitPuzzleResponse = {
+  suggestedCrossword: {
+    puzzleTopic: number
+    puzzleDifficulty: number
+  } | null
+  analysis: string
+}
 export const submitPuzzle = (variables: SubmitPuzzleVariables) => {
-  // TODO - TS fix
-  return client.post('/submitPuzzle', variables)
+  return client.post<SubmitPuzzleResponse, AxiosResponse<SubmitPuzzleResponse>, SubmitPuzzleVariables>(
+    '/submitPuzzle',
+    variables,
+  )
 }

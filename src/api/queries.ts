@@ -12,6 +12,8 @@ import {
   LoginVariables,
   RegisterResponse,
   RegisterVariables,
+  SubmitPuzzleResponse,
+  SubmitPuzzleVariables,
   generateCrossword,
   getAllPreloadedPuzzles,
   getCrossword,
@@ -116,5 +118,8 @@ export const useLikePuzzle = () => {
 }
 
 export const useSubmitPuzzle = () => {
-  return useMutation({ mutationFn: submitPuzzle }, queryClient)
+  return useMutation<AxiosResponse<SubmitPuzzleResponse>, AxiosError<SubmitPuzzleResponse>, SubmitPuzzleVariables>(
+    { mutationFn: submitPuzzle },
+    queryClient,
+  )
 }
