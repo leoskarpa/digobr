@@ -1,6 +1,6 @@
-import axios from 'axios'
-import { getRecoil } from 'recoil-nexus'
-import { accessTokenAtom } from '../atoms'
+import axios, { AxiosError } from 'axios'
+import { getRecoil, resetRecoil } from 'recoil-nexus'
+import { accessTokenAtom, userAtom } from '../atoms'
 
 export const client = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
@@ -13,3 +13,15 @@ client.interceptors.request.use(config => {
 
   return config
 })
+
+client.interceptors.response.use(
+  val => val,
+  (error: AxiosError) => {
+    if (error.response?.status === 401) {
+      resetRecoil(userAtom)
+      resetRecoil(accessTokenAtom)
+    }
+
+    return error
+  },
+)

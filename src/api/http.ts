@@ -3,6 +3,7 @@ import { client } from './client'
 import { Crossword } from './models/Crossword'
 import { Difficulty } from './models/Difficulty'
 import { Topic } from './models/Topic'
+import { User } from './models/User'
 import { Word } from './models/Word'
 
 export type LoginVariables = {
@@ -102,4 +103,8 @@ export const submitPuzzle = (variables: SubmitPuzzleVariables) => {
     '/submitPuzzle',
     variables,
   )
+}
+
+export const getMe = () => {
+  return client.get<User>('/getMe')
 }

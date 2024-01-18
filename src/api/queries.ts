@@ -18,12 +18,14 @@ import {
   getAllPreloadedPuzzles,
   getCrossword,
   getDifficulties,
+  getMe,
   getTopics,
   likePuzzle,
   login,
   register,
   submitPuzzle,
 } from './http'
+import { User } from './models/User'
 
 export const queryClient = new QueryClient()
 
@@ -120,6 +122,13 @@ export const useLikePuzzle = () => {
 export const useSubmitPuzzle = () => {
   return useMutation<AxiosResponse<SubmitPuzzleResponse>, AxiosError<SubmitPuzzleResponse>, SubmitPuzzleVariables>(
     { mutationFn: submitPuzzle },
+    queryClient,
+  )
+}
+
+export const useGetMe = () => {
+  return useQuery<AxiosResponse<User>, AxiosError<User>>(
+    { queryKey: ['me'], queryFn: getMe, refetchOnWindowFocus: false, retry: false },
     queryClient,
   )
 }

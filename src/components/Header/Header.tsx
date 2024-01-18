@@ -4,7 +4,7 @@ import { Dropdown } from 'antd'
 import { Link } from 'react-router-dom'
 
 import ChevronDownIcon from '../../assets/icons/chevron-down.svg?react'
-import { useUser } from '../../atoms'
+import { useAccessToken, useUser } from '../../atoms'
 import { theme } from '../../utils/theme'
 
 const containerStyle = css`
@@ -46,11 +46,15 @@ const chevronDownStyle = css`
 
 export const Header = () => {
   const { user, resetUser } = useUser()
+  const { resetAccessToken } = useAccessToken()
 
   const items: MenuProps['items'] = [
     {
       key: 'logout',
-      onClick: () => resetUser(),
+      onClick: () => {
+        resetUser()
+        resetAccessToken()
+      },
       label: 'Logout',
     },
   ]
