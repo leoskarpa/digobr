@@ -248,6 +248,7 @@ export const CrosswordPage = () => {
                 <div css={cluesWrapperStyle}>
                   <h3>Accross</h3>
                   {toPairs(crossword.across).map(val => (
+                    // @ts-expect-error because of css
                     <Clue key={val[0]} direction="across" number={val[0]} css={clueContainerStyle}>
                       <>
                         <p>{val[1].clue}</p>
@@ -281,6 +282,7 @@ export const CrosswordPage = () => {
                             label="HINT"
                             onClick={() => !hintDisabled && handleGetHint(val[1].answer, val[1].clue)}
                             type="ghost"
+                            // @ts-expect-error because of css
                             style={[hintButtonStyle, hintDisabled && hintButtonDisabledStyle]}
                           />
                         </Popover>
@@ -291,6 +293,7 @@ export const CrosswordPage = () => {
                 <div css={cluesWrapperStyle}>
                   <h3>Down</h3>
                   {toPairs(crossword.down).map(val => (
+                    // @ts-expect-error because of css
                     <Clue key={val[0]} direction="down" number={val[0]} css={clueContainerStyle}>
                       <>
                         <p>{val[1].clue}</p>
