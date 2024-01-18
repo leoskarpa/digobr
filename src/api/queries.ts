@@ -9,6 +9,7 @@ import {
   GetDifficultiesResponse,
   GetHintResponse,
   GetHintVariables,
+  GetStatsResponse,
   GetTopicsResponse,
   LoginResponse,
   LoginVariables,
@@ -22,6 +23,7 @@ import {
   getDifficulties,
   getHint,
   getMe,
+  getStats,
   getTopics,
   likePuzzle,
   login,
@@ -139,6 +141,13 @@ export const useGetMe = () => {
 export const useGetHint = () => {
   return useMutation<AxiosResponse<GetHintResponse>, AxiosError<GetHintResponse>, GetHintVariables>(
     { mutationFn: getHint },
+    queryClient,
+  )
+}
+
+export const useGetStats = () => {
+  return useQuery<AxiosResponse<GetStatsResponse>, AxiosError<GetStatsResponse>>(
+    { queryKey: ['stats'], queryFn: getStats },
     queryClient,
   )
 }

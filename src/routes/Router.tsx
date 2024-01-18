@@ -2,6 +2,7 @@ import { Route, createBrowserRouter, createRoutesFromElements } from 'react-rout
 import { Main } from '../components/Main'
 import { CrosswordPage } from '../pages/CrosswordPage'
 import { HomePage } from '../pages/Home'
+import { StatsPage } from '../pages/StatsPage'
 import { LoginPage } from '../pages/auth/LoginPage'
 import { RegisterPage } from '../pages/auth/RegisterPage'
 import { ProtectedRoute } from './ProtectedRoute'
@@ -14,6 +15,7 @@ export const router = createBrowserRouter(
       <Route element={<ProtectedRoute />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/quiz/:id" element={<CrosswordPage />} />
+        <Route path="/stats" element={<StatsPage />} />
       </Route>
     </Route>,
   ),

@@ -124,3 +124,13 @@ export type GetHintResponse = {
 export const getHint = (variables: GetHintVariables) => {
   return client.post<GetHintResponse, AxiosResponse<GetHintResponse>, GetHintVariables>('/hint', variables)
 }
+
+export type GetStatsResponse = {
+  totalSolved: number
+  totalCorrect: number
+  totalIncorrect: number
+  totalPercentage: string
+}
+export const getStats = () => {
+  return client.get<GetStatsResponse>('/statistics')
+}
