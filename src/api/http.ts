@@ -50,7 +50,11 @@ export type GetCrosswordParams = {
   crosswordId: number
 }
 export type GetCrosswordResponse = {
-  puzzle: Word[]
+  puzzleDto: { puzzle: Word[] }
+  puzzleInfo: {
+    difficultyId: number
+    topicId: number
+  }
 }
 export const getCrossword = (params: GetCrosswordParams) => {
   return client.get<GetCrosswordResponse, AxiosResponse<GetCrosswordResponse>, GetCrosswordParams>(
@@ -107,4 +111,15 @@ export const submitPuzzle = (variables: SubmitPuzzleVariables) => {
 
 export const getMe = () => {
   return client.get<User>('/getMe')
+}
+
+export type GetHintVariables = {
+  word: string
+  clue: string
+}
+export type GetHintResponse = {
+  hint: string
+}
+export const getHint = (variables: GetHintVariables) => {
+  return client.post<GetHintResponse, AxiosResponse<GetHintResponse>, GetHintVariables>('/hint', variables)
 }

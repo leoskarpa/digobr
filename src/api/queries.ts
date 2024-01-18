@@ -7,6 +7,8 @@ import {
   GetCrosswordParams,
   GetCrosswordResponse,
   GetDifficultiesResponse,
+  GetHintResponse,
+  GetHintVariables,
   GetTopicsResponse,
   LoginResponse,
   LoginVariables,
@@ -18,6 +20,7 @@ import {
   getAllPreloadedPuzzles,
   getCrossword,
   getDifficulties,
+  getHint,
   getMe,
   getTopics,
   likePuzzle,
@@ -70,14 +73,14 @@ export const useGetAllPreloadedPuzzles = () => {
 
 export const useGetDifficulties = () => {
   return useQuery<AxiosResponse<GetDifficultiesResponse>, AxiosError<GetDifficultiesResponse>>(
-    { queryKey: ['difficulties'], queryFn: getDifficulties },
+    { queryKey: ['difficulties'], queryFn: getDifficulties, refetchOnWindowFocus: false },
     queryClient,
   )
 }
 
 export const useGetTopics = () => {
   return useQuery<AxiosResponse<GetTopicsResponse>, AxiosError<GetTopicsResponse>>(
-    { queryKey: ['topics'], queryFn: getTopics },
+    { queryKey: ['topics'], queryFn: getTopics, refetchOnWindowFocus: false },
     queryClient,
   )
 }
@@ -129,6 +132,13 @@ export const useSubmitPuzzle = () => {
 export const useGetMe = () => {
   return useQuery<AxiosResponse<User>, AxiosError<User>>(
     { queryKey: ['me'], queryFn: getMe, refetchOnWindowFocus: false, retry: false },
+    queryClient,
+  )
+}
+
+export const useGetHint = () => {
+  return useMutation<AxiosResponse<GetHintResponse>, AxiosError<GetHintResponse>, GetHintVariables>(
+    { mutationFn: getHint },
     queryClient,
   )
 }

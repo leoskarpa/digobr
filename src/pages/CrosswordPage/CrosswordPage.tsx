@@ -1,26 +1,31 @@
 import { css } from '@emotion/react'
-import {
-  CrosswordGrid,
-  CrosswordProvider,
-  CrosswordProviderImperative,
-  DirectionClues,
-} from '@jaredreisinger/react-crossword'
+import { Clue, CrosswordGrid, CrosswordProvider } from '@jaredreisinger/react-crossword'
 import { ClueTypeOriginal, CluesInputOriginal } from '@jaredreisinger/react-crossword/dist/types'
 import { Player } from '@lottiefiles/react-lottie-player'
-import { useMemo, useRef, useState } from 'react'
-
-import { Modal } from 'antd'
-import { values } from 'lodash'
+import { Modal, Popover } from 'antd'
+import { toPairs, values } from 'lodash'
+import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
+
 import { SubmitPuzzleVariables } from '../../api/http'
-import { useGenerateCrossword, useGetCrossword, useSubmitPuzzle } from '../../api/queries'
+import {
+  useGenerateCrossword,
+  useGetCrossword,
+  useGetDifficulties,
+  useGetHint,
+  useGetTopics,
+  useSubmitPuzzle,
+} from '../../api/queries'
 import { Button } from '../../components/inputs/Button'
 import { useRequiredParams } from '../../utils/hooks'
 import { theme } from '../../utils/theme'
 
-import { useNavigate } from 'react-router-dom'
 import GeneratingAnimation from '../../assets/animations/generating.json'
+import LoadingAnimation from '../../assets/animations/loading.json'
 import ProcessingAnimation from '../../assets/animations/processing.json'
+import HeartEmptyIcon from '../../assets/icons/heart-empty.svg?react'
+import HeartFilledIcon from '../../assets/icons/heart-filled.svg?react'
 
 const screenStyle = css`
   padding: 1rem;
@@ -72,6 +77,34 @@ const cluesContainerStyle = css`
   flex-direction: row;
   justify-content: space-evenly;
 `
+const cluesWrapperStyle = css`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+`
+const clueContainerStyle = css`
+  display: flex;
+  align-items: center;
+
+  :hover {
+    cursor: pointer;
+  }
+
+  > p {
+    margin-left: 0.25rem;
+  }
+`
+const hintButtonStyle = css`
+  padding: 0;
+  font-size: 0.875rem;
+  border-width: 0;
+  margin-left: 1rem;
+`
+const hintButtonDisabledStyle = css`
+  :hover {
+    cursor: not-allowed;
+  }
+`
 const animationStyle = css`
   width: 20rem;
 `
@@ -95,18 +128,22 @@ export const CrosswordPage = () => {
   const { id } = useRequiredParams<CrosswordPageParams>()
 
   const [submitModalOpen, setSubmitModalOpen] = useState(false)
+  const [hint, setHint] = useState<{ hint: string; answer: string }>()
+  const [hintDisabled, setHintDisabled] = useState(false)
   const navigate = useNavigate()
 
   const { data, isFetching } = useGetCrossword({ crosswordId: +id })
+  const { data: difficultiesData } = useGetDifficulties()
+  const { data: topicsData } = useGetTopics()
+
   const { data: submitData, isPending: isSubmitting, mutate: submitPuzzle, reset: resetSubmit } = useSubmitPuzzle()
   const { mutate: generateCrossword, isPending: isGenerating } = useGenerateCrossword()
-
-  const crosswordProviderRef = useRef<CrosswordProviderImperative>(null)
+  const { mutate: getHint, isPending: isGettingHint } = useGetHint()
 
   const crossword = useMemo<CluesInputOriginal | null>(
     () =>
       data
-        ? data.data.puzzle.reduce<CluesInputOriginal>(
+        ? data.data.puzzleDto.puzzle.reduce<CluesInputOriginal>(
             (final, curr, idx) => {
               const newClue: ClueTypeOriginal = {
                 clue: curr.desc,
@@ -169,6 +206,18 @@ export const CrosswordPage = () => {
       },
     })
   }
+  const handleGetHint = (answer: string, clue: string) => {
+    getHint(
+      { clue, word: answer },
+      {
+        onSuccess(data) {
+          setHint({ hint: data.data.hint, answer })
+          setHintDisabled(true)
+          setTimeout(() => setHintDisabled(false), 20000)
+        },
+      },
+    )
+  }
 
   return (
     <div css={screenStyle}>
@@ -191,14 +240,96 @@ export const CrosswordPage = () => {
                 focusBackground: theme.primary[400],
                 numberColor: theme.primary[200],
               }}
-              ref={crosswordProviderRef}
             >
               <div css={gridStyle}>
                 <CrosswordGrid />
               </div>
               <div css={cluesContainerStyle}>
-                <DirectionClues direction="across" />
-                <DirectionClues direction="down" />
+                <div css={cluesWrapperStyle}>
+                  <h3>Accross</h3>
+                  {toPairs(crossword.across).map(val => (
+                    <Clue key={val[0]} direction="across" number={val[0]} css={clueContainerStyle}>
+                      <>
+                        <p>{val[1].clue}</p>
+                        <Popover
+                          title="Hint"
+                          trigger="click"
+                          onOpenChange={visible => !visible && setHint(undefined)}
+                          {...(hintDisabled && hint?.answer !== val[1].answer ? { open: false } : {})}
+                          destroyTooltipOnHide={true}
+                          content={() => (
+                            <div>
+                              {isGettingHint ? (
+                                <>
+                                  <Player
+                                    css={css`
+                                      width: 1rem;
+                                      height: 1rem;
+                                    `}
+                                    src={LoadingAnimation}
+                                    autoplay
+                                    loop
+                                  />
+                                </>
+                              ) : (
+                                hint?.hint
+                              )}
+                            </div>
+                          )}
+                        >
+                          <Button
+                            label="HINT"
+                            onClick={() => !hintDisabled && handleGetHint(val[1].answer, val[1].clue)}
+                            type="ghost"
+                            style={[hintButtonStyle, hintDisabled && hintButtonDisabledStyle]}
+                          />
+                        </Popover>
+                      </>
+                    </Clue>
+                  ))}
+                </div>
+                <div css={cluesWrapperStyle}>
+                  <h3>Down</h3>
+                  {toPairs(crossword.down).map(val => (
+                    <Clue key={val[0]} direction="down" number={val[0]} css={clueContainerStyle}>
+                      <>
+                        <p>{val[1].clue}</p>
+                        <Popover
+                          title="Hint"
+                          trigger="click"
+                          onOpenChange={visible => !visible && setHint(undefined)}
+                          destroyTooltipOnHide={true}
+                          content={() => (
+                            <div>
+                              {isGettingHint ? (
+                                <>
+                                  <Player
+                                    css={css`
+                                      width: 1rem;
+                                      height: 1rem;
+                                    `}
+                                    src={LoadingAnimation}
+                                    autoplay
+                                    loop
+                                  />
+                                </>
+                              ) : (
+                                hint?.hint
+                              )}
+                            </div>
+                          )}
+                        >
+                          <Button
+                            label="HINT"
+                            onClick={() => handleGetHint(val[1].answer, val[1].clue)}
+                            type="ghost"
+                            style={hintButtonStyle}
+                          />
+                        </Popover>
+                      </>
+                    </Clue>
+                  ))}
+                </div>
               </div>
             </CrosswordProvider>
           )
@@ -222,8 +353,10 @@ export const CrosswordPage = () => {
             {
               difficultyId: submitData?.data.suggestedCrossword
                 ? submitData?.data.suggestedCrossword.puzzleDifficulty
-                : 1,
-              topicId: submitData?.data.suggestedCrossword ? submitData?.data.suggestedCrossword?.puzzleTopic : 1,
+                : data!.data.puzzleInfo.difficultyId,
+              topicId: submitData?.data.suggestedCrossword
+                ? submitData?.data.suggestedCrossword?.puzzleTopic
+                : data!.data.puzzleInfo.topicId,
             },
             {
               onSuccess(data) {
@@ -259,15 +392,24 @@ export const CrosswordPage = () => {
               <div css={analysisContainerStyle}>
                 <p css={analysisTextStyle}>{submitData?.data.analysis}</p>
               </div>
+              <div>
+                <h4>If you enjoyed this crossword, consider liking it!</h4>
+                <HeartEmptyIcon /> <HeartFilledIcon />
+              </div>
               {submitData?.data.suggestedCrossword && (
                 <div>
                   <h4>Suggested crossword</h4>
                   <p>
                     Because of your outstanding knowledge, we recommend you to try a new crossword with:
                     <br />
-                    <b>difficulty:</b> {'easy'}
+                    <b>difficulty:</b>{' '}
+                    {
+                      difficultiesData?.data.find(d => d.id === submitData.data.suggestedCrossword?.puzzleDifficulty)
+                        ?.description
+                    }
                     <br />
-                    <b>topic:</b> {'sport'}
+                    <b>topic:</b>{' '}
+                    {topicsData?.data.find(t => t.id === submitData.data.suggestedCrossword?.puzzleTopic)?.topicName}
                   </p>
                 </div>
               )}
