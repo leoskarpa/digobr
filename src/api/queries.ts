@@ -56,7 +56,7 @@ export const useGenerateCrossword = () => {
 
 export const useGetCrossword = (params: GetCrosswordParams) => {
   return useQuery<AxiosResponse<GetCrosswordResponse>, AxiosError<GetCrosswordResponse>>(
-    { queryKey: ['query', params], queryFn: () => getCrossword(params), refetchOnWindowFocus: false },
+    { queryKey: ['crossword', params], queryFn: () => getCrossword(params), refetchOnWindowFocus: false },
     queryClient,
   )
 }
@@ -90,32 +90,32 @@ export const useLikePuzzle = () => {
     {
       mutationFn: likePuzzle,
       onMutate: async variables => {
-        await queryClient.cancelQueries({ queryKey: ['preloaded'] })
+        await queryClient.cancelQueries({ queryKey: ['crossword', variables] })
 
-        const previousPreloadedPuzzles = queryClient.getQueryData<AxiosResponse<GetAllPreloadedPuzzlesResponse>>([
-          'preloaded',
+        const previousCrossword = queryClient.getQueryData<AxiosResponse<GetCrosswordResponse>>([
+          'crossword',
+          variables,
         ])
 
-        queryClient.setQueryData<AxiosResponse<GetAllPreloadedPuzzlesResponse>>(
-          ['preloaded'],
+        queryClient.setQueryData<AxiosResponse<GetCrosswordResponse>>(
+          ['crossword', variables],
           old =>
             old && {
               ...old,
-              data: old.data.map(pp =>
-                pp.id === variables.crosswordId
-                  ? { ...pp, likedByUser: !pp.likedByUser, likes: pp.likedByUser ? pp.likes - 1 : pp.likes + 1 }
-                  : pp,
-              ),
+              data: {
+                ...old.data,
+                puzzleInfo: {
+                  ...old.data.puzzleInfo,
+                  isLiked: true,
+                },
+              },
             },
         )
 
-        return { previousPreloadedPuzzles }
+        return { previousCrossword }
       },
-      onError: (_, __, context) => {
-        queryClient.setQueryData(['todos'], context?.previousPreloadedPuzzles)
-      },
-      onSettled: async () => {
-        await queryClient.invalidateQueries({ queryKey: ['preloaded'] })
+      onError: (_, variables, context) => {
+        queryClient.setQueryData(['crossword', variables], context?.previousCrossword)
       },
     },
     queryClient,

@@ -54,6 +54,7 @@ export type GetCrosswordResponse = {
   puzzleInfo: {
     difficultyId: number
     topicId: number
+    isLiked: boolean
   }
 }
 export const getCrossword = (params: GetCrosswordParams) => {

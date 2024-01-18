@@ -15,6 +15,7 @@ import {
   useGetDifficulties,
   useGetHint,
   useGetTopics,
+  useLikePuzzle,
   useSubmitPuzzle,
 } from '../../api/queries'
 import { Button } from '../../components/inputs/Button'
@@ -25,7 +26,6 @@ import GeneratingAnimation from '../../assets/animations/generating.json'
 import LoadingAnimation from '../../assets/animations/loading.json'
 import ProcessingAnimation from '../../assets/animations/processing.json'
 import HeartEmptyIcon from '../../assets/icons/heart-empty.svg?react'
-import HeartFilledIcon from '../../assets/icons/heart-filled.svg?react'
 
 const screenStyle = css`
   padding: 1rem;
@@ -76,6 +76,7 @@ const cluesContainerStyle = css`
   display: flex;
   flex-direction: row;
   justify-content: space-evenly;
+  gap: 1rem;
 `
 const cluesWrapperStyle = css`
   display: flex;
@@ -118,6 +119,23 @@ const analysisTextStyle = css`
   overflow-y: auto;
   white-space: pre-wrap;
 `
+const likeContainerStyle = css`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+`
+const likeIconStyle = css`
+  color: ${theme.primary[500]};
+
+  :hover {
+    cursor: pointer;
+    scale: 1.25;
+  }
+
+  transition: scale 0.25s;
+`
 
 type LocalStorageGuesses = { date: number; guesses: { [K: string]: string } }
 
@@ -139,6 +157,7 @@ export const CrosswordPage = () => {
   const { data: submitData, isPending: isSubmitting, mutate: submitPuzzle, reset: resetSubmit } = useSubmitPuzzle()
   const { mutate: generateCrossword, isPending: isGenerating } = useGenerateCrossword()
   const { mutate: getHint, isPending: isGettingHint } = useGetHint()
+  const { mutate: likePuzzle } = useLikePuzzle()
 
   const crossword = useMemo<CluesInputOriginal | null>(
     () =>
@@ -395,10 +414,16 @@ export const CrosswordPage = () => {
               <div css={analysisContainerStyle}>
                 <p css={analysisTextStyle}>{submitData?.data.analysis}</p>
               </div>
-              <div>
-                <h4>If you enjoyed this crossword, consider liking it!</h4>
-                <HeartEmptyIcon /> <HeartFilledIcon />
-              </div>
+              {data?.data.puzzleInfo.isLiked ? (
+                <div css={likeContainerStyle}>
+                  <h4>Thank you for liking this crossword!</h4>
+                </div>
+              ) : (
+                <div css={likeContainerStyle}>
+                  <h4>If you enjoyed this crossword, consider liking it!</h4>
+                  <HeartEmptyIcon css={likeIconStyle} onClick={() => likePuzzle({ crosswordId: +id })} />
+                </div>
+              )}
               {submitData?.data.suggestedCrossword && (
                 <div>
                   <h4>Suggested crossword</h4>
