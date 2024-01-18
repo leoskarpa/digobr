@@ -320,6 +320,7 @@ export const CrosswordPage = () => {
                           title="Hint"
                           trigger="click"
                           onOpenChange={visible => !visible && setHint(undefined)}
+                          {...(hintDisabled && hint?.answer !== val[1].answer ? { open: false } : {})}
                           destroyTooltipOnHide={true}
                           content={() => (
                             <div>
@@ -343,9 +344,10 @@ export const CrosswordPage = () => {
                         >
                           <Button
                             label="HINT"
-                            onClick={() => handleGetHint(val[1].answer, val[1].clue)}
+                            onClick={() => !hintDisabled && handleGetHint(val[1].answer, val[1].clue)}
                             type="ghost"
-                            style={hintButtonStyle}
+                            // @ts-expect-error because of css
+                            style={[hintButtonStyle, hintDisabled && hintButtonDisabledStyle]}
                           />
                         </Popover>
                       </>

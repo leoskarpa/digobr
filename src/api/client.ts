@@ -22,6 +22,6 @@ client.interceptors.response.use(
       resetRecoil(accessTokenAtom)
     }
 
-    return error
+    throw error
   },
 )
