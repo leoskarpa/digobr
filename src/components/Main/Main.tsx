@@ -20,6 +20,10 @@ const mainContainer = css`
   display: flex;
   flex-direction: column;
 `
+const loadingAnimationStyle = css`
+  height: 50rem;
+  width: 50rem;
+`
 
 export const Main = () => {
   const { setUser } = useUser()
@@ -30,7 +34,9 @@ export const Main = () => {
   return (
     <div css={container}>
       <Header />
-      <main css={mainContainer}>{isLoading ? <Player src={LoadingAnimation} autoplay loop /> : <Outlet />}</main>
+      <main css={mainContainer}>
+        {isLoading ? <Player src={LoadingAnimation} css={loadingAnimationStyle} autoplay loop /> : <Outlet />}
+      </main>
       <Footer />
     </div>
   )
