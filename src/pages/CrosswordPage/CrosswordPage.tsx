@@ -1,10 +1,10 @@
 import { css } from '@emotion/react'
-import { Clue, CrosswordGrid, CrosswordProvider } from '@jaredreisinger/react-crossword'
+import { Clue, CrosswordGrid, CrosswordProvider, CrosswordProviderImperative } from '@jaredreisinger/react-crossword'
 import { ClueTypeOriginal, CluesInputOriginal } from '@jaredreisinger/react-crossword/dist/types'
 import { Player } from '@lottiefiles/react-lottie-player'
 import { Modal, Popover } from 'antd'
 import { toPairs, values } from 'lodash'
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 
@@ -149,6 +149,7 @@ export const CrosswordPage = () => {
   const [hint, setHint] = useState<{ hint: string; answer: string }>()
   const [hintDisabled, setHintDisabled] = useState(false)
   const navigate = useNavigate()
+  const crosswordRef = useRef<CrosswordProviderImperative | null>(null)
 
   const { data, isFetching } = useGetCrossword({ crosswordId: +id })
   const { data: difficultiesData } = useGetDifficulties()
@@ -259,6 +260,7 @@ export const CrosswordPage = () => {
                 focusBackground: theme.primary[400],
                 numberColor: theme.primary[200],
               }}
+              ref={crosswordRef}
             >
               <div css={gridStyle}>
                 <CrosswordGrid />
@@ -386,6 +388,7 @@ export const CrosswordPage = () => {
               onSuccess(data) {
                 setSubmitModalOpen(false)
                 toast.success('Successfully created a new crossword!')
+                crosswordRef.current?.reset()
                 navigate(`/quiz/${data.data}`, { replace: true })
               },
               onError(error) {
